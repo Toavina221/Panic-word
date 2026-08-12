@@ -137,3 +137,25 @@ Checkpoint précédent : 0f3a95a3
 - curl localhost:3000/data/mg.json OK (servi par vite)
 - Home.tsx sélecteur langue itère LANGUAGES (vérifié) ; storage.ts lang: LangCode + updatePrefs persiste → MG/DE persistés auto
 - Reste : cocher dernier item todo.md + checkpoint + message livraison
+
+## v6 — DÉBOGAGE DÉPLOIEMENT VERCEL (phase 21, 2026-08-12)
+### Contexte
+- Utilisateur a déployé sur Vercel via dépôt GitHub "Appscanner" (branche main, commit d8f7f9c « ajout d'autres langues »).
+- URL : panic-word.vercel.app (domaine perso) / panic-word-h07gp078b-appscanner.vercel.app. Statut « Prêt ».
+- SYMPTÔME : en ouvrant le lien, le navigateur affiche le CODE SOURCE du projet en texte (index.ts, oauth.ts, db.ts, env.ts, schema.ts... compilés en IIFE var ...) — c'est le bundle SERVEUR Node.js servi en texte à la racine.
+- Config Vercel utilisée : Preset Vite, Build Command `pnpm build`, Output `dist`, Install pnpm activé, env vars remplies (6 secrets + DATABASE_URL + VITE_APP_TITLE).
+- DIAGNOSTIC : `pnpm build` = `vite build && esbuild server/_core/index.ts ... --outdir=dist`. dist/ contient DONC à la fois le client statique (index.html, assets/) ET index.js (serveur Node). Vercel en mode statique sert dist/ à la racine → il sert index.js (le serveur) en texte au lieu de index.html. C'est la cause.
+### FIX RETENU
+Créer vercel.json à la racine du projet :
+- buildCommand identique mais sortie serveur déplacée : après esbuild, mv dist/index.js dist/server.js ; mieux : configurer les build scripts pour distinguer.
+- outputDirectory "dist" inchangé.
+- rewrites : SPA -> index.html pour toutes les routes non-asset.
+- MAIS le backend tRPC (/api/trpc) ne tournera PAS en statique => multijoueur HS sur Vercel statique. Le mode solo/PWA fonctionnera.
+- Option alternative : serverless functions (/api/trpc/index.js) — plus complexe (adapters express + tRPC).
+### Étapes
+1. Lire package.json build script + vite.config.ts.
+2. Écrire vercel.json (réécrire SPA index.html ; déplacer le server bundle hors dist ou vers un chemin non servi).
+3. Commit + push sur main (Vercel redéploie auto).
+4. Expliquer limite backend à l'utilisateur ; proposer déploiement Manus comme backup.
+### État avant fix
+- Endpoint env-reveal supprimé, checkpoint 149cb3de. Tests 27/27, tsc 0 erreur.

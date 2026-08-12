@@ -1,0 +1,27 @@
+{
+  "version": 2,
+  "buildCommand": "pnpm build",
+  "outputDirectory": "dist/public",
+  "installCommand": "pnpm install",
+  "framework": "vite",
+  "routes": [
+    {
+      "src": "^/api/trpc/.*$",
+      "dest": "/api/trpc",
+      "headers": { "cache-control": "no-store" }
+    },
+    {
+      "src": "^/service-worker\\.js$",
+      "headers": { "cache-control": "no-cache", "service-worker-allowed": "/" },
+      "dest": "/service-worker.js"
+    },
+    {
+      "src": "/manifest\\.json|/icons/.*|/data/.*|/assets/.*",
+      "headers": { "cache-control": "public, max-age=31536000, immutable" }
+    },
+    {
+      "src": "/.*",
+      "dest": "/index.html"
+    }
+  ]
+}

@@ -93,3 +93,11 @@
 - [x] Auto-validation : dès que l'utilisateur tape le nombre de lettres du mot cible, la réponse est jugée automatiquement
 - [x] Après un échec : champ vide automatiquement pour retaper, chrono continue
 - [x] Tests, vérification visuelle, checkpoint et livraison
+
+## v6 — Déploiement Vercel affiche le code serveur
+- [ ] Diagnostic : `pnpm build` place vite client dans dist/public ET esbuild server dans dist/index.js ; Vercel sert dist/ à la racine → index.js (bundle Node) servi en texte au lieu de index.html
+- [ ] Modifier le build : séparer clairement client (dist/public) et serveur (dist/index.js) sans conflit
+- [ ] Créer vercel.json : outputDirectory dist, SPA rewrites vers index.html, exclusion du bundle serveur de la racine
+- [ ] Vérifier le build local (client servi à la racine après build)
+- [ ] Commit + push sur main pour déclencher le redéploiement Vercel
+- [ ] Expliquer à l'utilisateur : le mode solo/PWA fonctionnera sur Vercel, le backend tRPC (multijoueur) nécessiterait des Serverless Functions ou rester sur le déploiement Manus
