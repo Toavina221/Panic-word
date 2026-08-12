@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Headphones, Keyboard, Mic, Trophy, Zap, Users, Skull } from "lucide-react";
 import {
   Dialog,
@@ -65,16 +65,16 @@ export default function Home() {
       <HeadsetDialog />
 
       {/* En-tête */}
-      <header className="px-6 pb-2 pt-10 text-center">
+      <header className="px-6 pb-1 pt-8 text-center sm:pt-10">
         <h1 className="font-display animate-fade-up text-5xl font-bold tracking-tight sm:text-6xl">
           <span className="text-primary">PANIC</span> WORD
         </h1>
-        <p className="animate-fade-up mt-3 text-sm text-muted-foreground" style={{ animationDelay: "60ms" }}>
+        <p className="animate-fade-up mt-2 text-sm text-muted-foreground" style={{ animationDelay: "60ms" }}>
           {t("app.subtitle")}
         </p>
       </header>
 
-      <main className="mx-auto w-full max-w-md flex-1 px-5 pb-8">
+      <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-5 pb-8">
         {/* Modes de jeu */}
         <section className="animate-fade-up mt-6" style={{ animationDelay: "100ms" }}>
           <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
@@ -267,8 +267,21 @@ export default function Home() {
         </p>
       </main>
 
-      <footer className="pb-4 text-center text-[10px] text-muted-foreground">
-        PANIC WORD · 100 % hors-ligne · {prefs.lang.toUpperCase()}
+      <footer className="flex flex-col items-center gap-1.5 pb-3 text-center text-[10px] text-muted-foreground">
+        <nav className="flex items-center gap-3">
+          <Link href="/legal" className="underline underline-offset-2 hover:text-foreground">
+            Mentions légales
+          </Link>
+          <Link href="/privacy" className="underline underline-offset-2 hover:text-foreground">
+            Confidentialité
+          </Link>
+          <Link href="/contact" className="underline underline-offset-2 hover:text-foreground">
+            Contact
+          </Link>
+        </nav>
+        <span>
+          PANIC WORD · 100 % hors-ligne · {prefs.lang.toUpperCase()}
+        </span>
       </footer>
     </div>
   );

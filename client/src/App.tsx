@@ -10,6 +10,7 @@ import Solo from "./pages/Solo";
 import Multi from "./pages/Multi";
 import GameEnd from "./pages/GameEnd";
 import History from "./pages/History";
+import Legal, { Privacy, Contact } from "./pages/Legal";
 
 function Router() {
   return (
@@ -20,6 +21,9 @@ function Router() {
         <Route path={"/multi"} component={Multi} />
         <Route path={"/end"} component={GameEnd} />
         <Route path={"/history"} component={History} />
+        <Route path={"/legal"} component={Legal} />
+        <Route path={"/privacy"} component={Privacy} />
+        <Route path={"/contact"} component={Contact} />
         <Route path={"/404"} component={NotFound} />
         <Route component={NotFound} />
       </Switch>
