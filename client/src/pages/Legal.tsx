@@ -31,10 +31,6 @@ export default function Legal() {
             Site web : <a href="https://vercel.com" target="_blank" rel="noopener noreferrer">vercel.com</a>
           </li>
         </ul>
-        <p>
-          Le développement et la maintenance du site sont assurés à l'aide de la
-          plateforme Manus (manus.im).
-        </p>
       </Section>
 
       <Section title="3. Propriété intellectuelle">
