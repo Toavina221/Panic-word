@@ -14,7 +14,29 @@
   "prefer_related_applications": false,
   "iarc_rating_id": "",
   "dir": "ltr",
-  "screenshots": [],
+  "screenshots": [
+    {
+      "src": "/screenshots/screenshot-home.png",
+      "sizes": "1080x1280",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Accueil - PANIC WORD"
+    },
+    {
+      "src": "/screenshots/screenshot-modes.png",
+      "sizes": "1080x1183",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Modes de difficulté"
+    },
+    {
+      "src": "/screenshots/screenshot-game.png",
+      "sizes": "1080x1183",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Partie en cours"
+    }
+  ],
   "icons": [
     {
       "src": "/icons/icon-192.png",
