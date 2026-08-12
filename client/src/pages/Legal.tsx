@@ -14,7 +14,7 @@ export default function Legal() {
         </p>
         <ul>
           <li>
-            <strong>Nom / Raison sociale : ROVAMAMPIONINA  Toavina</strong>
+            <strong>Nom  : ROVAMAMPIONINA  Toavina</strong>
           </li>
           <li>Adresse : Antananarivo , Madagascar</li>
           <li>Email : helpscanner@gmail.com</li>
@@ -133,7 +133,7 @@ export function Privacy() {
           rectification et de suppression de vos données. Comme le site ne
           collecte aucune donnée personnelle, ce droit s'exerce simplement en
           effaçant les données locales de votre navigateur. Pour toute question :
-          [EMAIL DE CONTACT À COMPLÉTER].
+          Email : helpscanner@gmail.com
         </p>
       </Section>
     </LegalShell>
