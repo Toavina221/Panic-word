@@ -1,70 +1,54 @@
-/**
- * Vercel serverless API — Panic Word multiplayer backend.
- * Pure JavaScript module (ESM): no dependencies, no TypeScript, no imports.
- * Vercel executes this file natively (no transpilation).
- *
- * Serves:
- *   POST /api/trpc/multi.createRoom
- *   POST /api/trpc/multi.joinRoom
- *   GET/POST /api/trpc/multi.getRoom
- *   POST /api/trpc/multi.reportRound
- *   POST /api/trpc/multi.finishGame
- *
- * Responses use the superjson envelope expected by the tRPC react-query
- * client: { "result": { "data": { "json": <payload> } } }
- */
+// Vercel Node serverless function — Panic Word multiplayer backend.
+// Signature Node : handler(req, res) — req = IncomingMessage, res = ServerResponse.
+// No imports, no dependencies, works on any Node version Vercel provides.
 
-// ---------------------------------------------------------------------------
-// In-memory rooms (volatile; a room is garbage-collected after 30 min idle)
-// ---------------------------------------------------------------------------
-const rooms = new Map();
-const ROOM_TTL_MS = 30 * 60 * 1000;
+var rooms = new Map();
+var ROOM_TTL_MS = 30 * 60 * 1000;
 
 function gcRooms() {
-  const now = Date.now();
-  for (const [code, room] of rooms) {
-    let active = false;
-    for (const p of room.players.values()) {
+  var now = Date.now();
+  rooms.forEach(function (room, code) {
+    var active = false;
+    room.players.forEach(function (p) {
       if (now - p.lastPing < ROOM_TTL_MS) active = true;
-    }
+    });
     if (room.players.size === 0 || !active) rooms.delete(code);
-  }
+  });
 }
 
 function clampDuration(ms) {
-  if (ms === undefined || typeof ms !== "number" || !Number.isFinite(ms)) return 3000;
+  if (typeof ms !== "number" || !Number.isFinite(ms)) return 3000;
   return Math.min(10000, Math.max(2000, Math.round(ms)));
 }
 
 function createRoomCode() {
-  const letters = "ABCDEFGHJKLMNPQRSTUVWXYZ";
-  let code = "";
-  for (let i = 0; i < 4; i++) {
+  var letters = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+  var code = "";
+  for (var i = 0; i < 4; i++) {
     code += letters[Math.floor(Math.random() * letters.length)];
   }
   return code;
 }
 
-// ---------------------------------------------------------------------------
-// Response helpers (superjson envelope)
-// ---------------------------------------------------------------------------
-function okJson(data) {
-  return jsonResponse({ result: { data: { json: data } } });
-}
-
-function jsonResponse(obj, status) {
+function sendJson(res, status, obj) {
   var body = JSON.stringify(obj);
-  return new Response(body, {
-    status: status || 200,
-    headers: {
-      "Content-Type": "application/json",
-      "Cache-Control": "no-store",
-    },
-  });
+  res.statusCode = status;
+  res.setHeader("Content-Type", "application/json");
+  res.setHeader("Cache-Control", "no-store");
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.end(body);
 }
 
-function tRpcError(message) {
-  return jsonResponse(
+function tRpcOk(res, data) {
+  sendJson(res, 200, { result: { data: { json: data } } });
+}
+
+function tRpcError(res, message) {
+  sendJson(
+    res,
+    500,
     {
       error: {
         json: {
@@ -74,30 +58,44 @@ function tRpcError(message) {
         },
       },
     },
-    500,
   );
 }
 
-// ---------------------------------------------------------------------------
-// Request parsing (tRPC httpBatchLink sends { json: {...} } in body or input)
-// ---------------------------------------------------------------------------
-async function readBody(req) {
-  try {
-    var text = await req.text();
-    if (!text) return {};
-    var parsed = JSON.parse(text);
-    return parsed.json !== undefined ? parsed.json : parsed;
-  } catch (e) {
-    return {};
-  }
+function readBody(req) {
+  return new Promise(function (resolve) {
+    var chunks = [];
+    req.on("data", function (c) {
+      chunks.push(c);
+      if (chunks.length > 64) {
+        resolve({});
+        req.destroy();
+      }
+    });
+    req.on("end", function () {
+      try {
+        var text = Buffer.concat(chunks).toString("utf8");
+        if (!text) return resolve({});
+        var parsed = JSON.parse(text);
+        resolve(parsed.json !== undefined ? parsed.json : parsed);
+      } catch (e) {
+        resolve({});
+      }
+    });
+    req.on("error", function () {
+      resolve({});
+    });
+    // Safety net: resolve empty if body never arrives
+    setTimeout(function () {
+      resolve({});
+    }, 8000);
+  });
 }
 
-function parseGetInput(urlString) {
+function parseQueryInput(urlString) {
   try {
-    var u = new URL(urlString, "https://u");
-    var input = u.searchParams.get("input");
-    if (!input) return {};
-    var parsed = JSON.parse(decodeURIComponent(input));
+    var m = /[?&]input=([^&]*)/.exec(urlString);
+    if (!m) return {};
+    var parsed = JSON.parse(decodeURIComponent(m[1]));
     return parsed.json !== undefined ? parsed.json : parsed;
   } catch (e) {
     return {};
@@ -108,44 +106,44 @@ function upperCode(raw) {
   return String(raw || "").trim().toUpperCase();
 }
 
-// ---------------------------------------------------------------------------
-// Route handlers
-// ---------------------------------------------------------------------------
-async function handleCreateRoom(body) {
+function handleCreateRoom(res, body) {
   gcRooms();
   var playerId = body.playerId;
   var name = body.name;
-  if (!playerId || !name) return tRpcError("playerId and name required");
+  if (!playerId || !name) return tRpcError(res, "playerId and name required");
 
   var code = createRoomCode();
-  while (rooms.has(code)) {
-    code = createRoomCode();
-  }
+  while (rooms.has(code)) code = createRoomCode();
 
-  var room = {
+  var inputMode = body.inputMode === "voice" ? "voice" : "keyboard";
+  var roundDurationMs = clampDuration(body.roundDurationMs);
+  rooms.set(code, {
     code: code,
     hostId: playerId,
     startedAt: Date.now(),
-    inputMode: body.inputMode === "voice" ? "voice" : "keyboard",
-    roundDurationMs: clampDuration(body.roundDurationMs),
-    players: new Map(),
-  };
-  room.players.set(playerId, {
-    id: playerId,
-    name: String(name).slice(0, 24),
-    score: 0,
-    wordsFound: 0,
-    currentRound: 0,
-    lastPing: Date.now(),
-    finished: false,
+    inputMode: inputMode,
+    roundDurationMs: roundDurationMs,
+    players: new Map([
+      [
+        playerId,
+        {
+          id: playerId,
+          name: String(name).slice(0, 24),
+          score: 0,
+          wordsFound: 0,
+          currentRound: 0,
+          lastPing: Date.now(),
+          finished: false,
+        },
+      ],
+    ]),
   });
-  rooms.set(code, room);
-  return okJson({ code: code, inputMode: room.inputMode, roundDurationMs: room.roundDurationMs });
+  tRpcOk(res, { code: code, inputMode: inputMode, roundDurationMs: roundDurationMs });
 }
 
-function handleJoinRoom(body) {
+function handleJoinRoom(res, body) {
   var room = rooms.get(upperCode(body.code));
-  if (!room) return okJson({ ok: false, error: "not_found" });
+  if (!room) return tRpcOk(res, { ok: false, error: "not_found" });
 
   var id = "p-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 7);
   room.players.set(id, {
@@ -157,7 +155,7 @@ function handleJoinRoom(body) {
     lastPing: Date.now(),
     finished: false,
   });
-  return okJson({
+  tRpcOk(res, {
     ok: true,
     playerId: id,
     code: room.code,
@@ -166,9 +164,9 @@ function handleJoinRoom(body) {
   });
 }
 
-function handleGetRoom(code) {
+function handleGetRoom(res, code) {
   var room = rooms.get(upperCode(code));
-  if (!room) return okJson({ players: [], started: false });
+  if (!room) return tRpcOk(res, { players: [], started: false });
   var players = Array.from(room.players.values())
     .map(function (p) {
       return {
@@ -183,76 +181,81 @@ function handleGetRoom(code) {
     .sort(function (a, b) {
       return b.score - a.score;
     });
-  return okJson({ players: players, started: true, inputMode: room.inputMode, roundDurationMs: room.roundDurationMs });
+  tRpcOk(res, { players: players, started: true, inputMode: room.inputMode, roundDurationMs: room.roundDurationMs });
 }
 
-function handleReportRound(body) {
+function handleReportRound(res, body) {
   var room = rooms.get(upperCode(body.code));
   var player = room && room.players.get(body.playerId);
-  if (!room || !player) return okJson({ ok: false });
+  if (!room || !player) return tRpcOk(res, { ok: false });
   player.score += Number(body.roundScore || 0);
   if (body.found) player.wordsFound += 1;
   player.currentRound = Number(body.round || 0);
   player.lastPing = Date.now();
-  return okJson({ ok: true, score: player.score });
+  tRpcOk(res, { ok: true, score: player.score });
 }
 
-function handleFinishGame(body) {
+function handleFinishGame(res, body) {
   var room = rooms.get(upperCode(body.code));
   var player = room && room.players.get(body.playerId);
-  if (!room || !player) return okJson({ ok: false });
+  if (!room || !player) return tRpcOk(res, { ok: false });
   player.finished = true;
   player.lastPing = Date.now();
-  return okJson({ ok: true });
+  tRpcOk(res, { ok: true });
 }
 
-// ---------------------------------------------------------------------------
-// Vercel serverless handler — called by Vercel with (request, context)
-// ---------------------------------------------------------------------------
-export default async function handler(req) {
-  var url;
-  try {
-    url = new URL(req.url, "https://u");
-  } catch (e) {
-    return jsonResponse({ error: "bad url" }, 400);
+function handler(req, res) {
+  var urlStr = req.url || "";
+  var pathname = urlStr.split("?")[0];
+  var method = (req.method || "GET").toUpperCase();
+
+  // CORS preflight
+  if (method === "OPTIONS") {
+    sendJson(res, 200, { ok: true });
+    return;
   }
 
-  if (url.pathname === "/api/health") {
-    return jsonResponse({ ok: true, service: "panic-word-multi" });
+  // Direct endpoints (bypass tRPC envelope) — useful for quick checks
+  if (pathname === "/api/health" || pathname === "/api/ping") {
+    return sendJson(res, 200, { ok: true, service: "panic-word-multi" });
   }
 
-  var match = url.pathname.match(/^\/api\/trpc\/multi\.([A-Za-z]+)$/);
+  var match = /^\/api\/trpc\/multi\.([A-Za-z]+)$/.exec(pathname);
   if (!match) {
-    return jsonResponse({ error: "unknown path: " + url.pathname }, 404);
+    return sendJson(res, 404, { error: "unknown path" });
   }
   var proc = match[1];
 
-  try {
-    if (req.method === "GET") {
-      if (proc !== "getRoom") return tRpcError("GET not supported for " + proc);
-      return handleGetRoom(parseGetInput(url.toString()).code);
+  function route(body) {
+    try {
+      if (method === "GET") {
+        if (proc !== "getRoom") return tRpcError(res, "GET not supported for " + proc);
+        return handleGetRoom(res, parseQueryInput(urlStr).code);
+      }
+      if (method !== "POST") return sendJson(res, 405, { error: "method not allowed" });
+      switch (proc) {
+        case "createRoom":
+          return handleCreateRoom(res, body);
+        case "joinRoom":
+          return handleJoinRoom(res, body);
+        case "getRoom":
+          return handleGetRoom(res, body.code);
+        case "reportRound":
+          return handleReportRound(res, body);
+        case "finishGame":
+          return handleFinishGame(res, body);
+        default:
+          return tRpcError(res, "unknown procedure: " + proc);
+      }
+    } catch (err) {
+      tRpcError(res, err && err.message ? err.message : "server error");
     }
-    if (req.method !== "POST") {
-      return jsonResponse({ error: "method not allowed" }, 405);
-    }
-
-    var body = await readBody(req);
-    switch (proc) {
-      case "createRoom":
-        return await handleCreateRoom(body);
-      case "joinRoom":
-        return handleJoinRoom(body);
-      case "getRoom":
-        return handleGetRoom(body.code);
-      case "reportRound":
-        return handleReportRound(body);
-      case "finishGame":
-        return handleFinishGame(body);
-      default:
-        return tRpcError("unknown procedure: " + proc);
-    }
-  } catch (err) {
-    console.error("[multi]", err);
-    return tRpcError(err && err.message ? err.message : "server error");
   }
+
+  if (method === "GET") {
+    return route({});
+  }
+  readBody(req).then(route);
 }
+
+export default handler;

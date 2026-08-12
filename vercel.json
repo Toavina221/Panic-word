@@ -42,7 +42,7 @@
       "destination": "/api/index"
     },
     {
-      "source": "/((?!assets|icons|data|screenshots|manifest.json|service-worker.js|robots.txt|__manus__).*)",
+      "source": "/((?!api|assets|icons|data|screenshots|manifest.json|service-worker.js|robots.txt|__manus__).*)",
       "destination": "/index.html"
     }
   ]
