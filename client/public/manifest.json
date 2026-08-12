@@ -10,6 +10,11 @@
   "background_color": "#0b0b12",
   "theme_color": "#4f34c0",
   "categories": ["games", "entertainment"],
+  "id": "/",
+  "prefer_related_applications": false,
+  "iarc_rating_id": "",
+  "dir": "ltr",
+  "screenshots": [],
   "icons": [
     {
       "src": "/icons/icon-192.png",
