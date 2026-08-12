@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1786514315251,
+      "tag": "0000_dear_green_goblin",
+      "breakpoints": true
+    }
+  ]
+}
