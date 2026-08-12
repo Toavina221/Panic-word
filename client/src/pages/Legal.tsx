@@ -14,10 +14,10 @@ export default function Legal() {
         </p>
         <ul>
           <li>
-            <strong>Nom / Raison sociale : [VOTRE NOM OU SOCIÉTÉ À COMPLÉTER]</strong>
+            <strong>Nom / Raison sociale : ROVAMAMPIONINA  Toavina</strong>
           </li>
-          <li>Adresse : [ADRESSE À COMPLÉTER]</li>
-          <li>Email : [EMAIL À COMPLÉTER]</li>
+          <li>Adresse : Antananarivo , Madagascar</li>
+          <li>Email : helpscanner@gmail.com</li>
         </ul>
       </Section>
 
@@ -153,7 +153,7 @@ export function Contact() {
           commerciale, contactez-nous par email :
         </p>
         <p className="text-center text-lg font-semibold text-foreground">
-          <a href="mailto:[EMAIL À COMPLÉTER]">[EMAIL À COMPLÉTER]</a>
+          <a href="mailto:[EMAIL À COMPLÉTER]">helpscanner@gmail.com</a>
         </p>
       </Section>
 
