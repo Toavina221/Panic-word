@@ -18,7 +18,7 @@ export default function Solo() {
 
   if (difficulty === null) {
     return (
-      <div className="flex min-h-full flex-col px-5 pb-8 pt-8">
+      <div className="mx-auto flex min-h-full w-full max-w-md flex-col justify-center px-5 py-8">
         <button
           onClick={() => navigate("/")}
           className="btn-press mb-6 flex w-fit items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
@@ -63,7 +63,7 @@ export default function Solo() {
   }
 
   return (
-    <div>
+    <div className="flex h-full flex-col">
       <Game difficulty={difficulty} mode="solo" />
     </div>
   );

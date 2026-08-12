@@ -120,7 +120,7 @@ export default function Multi() {
   /* ------------------------- Rendu ------------------------- */
   if (step === "playing") {
     return (
-      <div className="relative">
+      <div className="relative flex h-full flex-col">
         <Game
           difficulty={difficulty}
           mode="multi"
@@ -169,7 +169,7 @@ export default function Multi() {
   if (step === "lobby") {
     const me = players.find((p) => p.id === playerId);
     return (
-      <div className="flex min-h-full flex-col px-5 pb-8 pt-8">
+      <div className="mx-auto flex min-h-full w-full max-w-md flex-col justify-center px-5 py-8">
         <button
           onClick={() => navigate("/")}
           className="btn-press mb-6 flex w-fit items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
@@ -282,7 +282,7 @@ export default function Multi() {
 
   /* ------------------------- Setup ------------------------- */
   return (
-    <div className="flex min-h-full flex-col px-5 pb-8 pt-8">
+    <div className="mx-auto flex min-h-full w-full max-w-md flex-col justify-center px-5 py-8">
       <button
         onClick={() => navigate("/")}
         className="btn-press mb-6 flex w-fit items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
