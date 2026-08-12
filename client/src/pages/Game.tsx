@@ -189,11 +189,6 @@ export default function Game({ difficulty, mode, roomSeed, overrideInputMode, ov
     resumeAudio();
     if (engine.submit(answer)) {
       setAnswer("");
-    } else {
-      // Mauvaise réponse : buzzer sec + secousse du champ, le chrono continue
-      playWrong();
-      setShakeKey((k) => k + 1);
-      toast.error(t("game.wrong"), { duration: 900 });
     }
   };
 
@@ -201,11 +196,28 @@ export default function Game({ difficulty, mode, roomSeed, overrideInputMode, ov
     if (e.key === "Enter") onSubmit();
   };
 
-  /* Auto-validation clavier : dès que la saisie forme le mot cible (sans buzzer — réservé à la soumission explicite) */
+  const onChangeAnswer = (value: string) => {
+    // Limite la saisie à la longueur du mot cible (l'auto-validation juge dès que la
+    // longueur est atteinte — pas besoin de lettres supplémentaires)
+    const targetLen = engine.target.length;
+    setAnswer(targetLen > 0 ? value.slice(0, targetLen) : value);
+  };
+
+  /* Auto-validation clavier : dès que le nombre de lettres du mot cible est atteint,
+     la réponse est jugée. Bonne réponse → rien (son de victoire). Mauvaise réponse →
+     buzzer sec, le champ se vide immédiatement et le joueur peut retaper, le chrono continue. */
   useEffect(() => {
     if (inputMode !== "keyboard") return;
-    if (answer.length > 0 && engine.submitQuiet(answer)) {
-      setAnswer("");
+    const targetLen = engine.target.length;
+    if (targetLen > 0 && answer.length >= targetLen) {
+      if (engine.submitQuiet(answer)) {
+        setAnswer("");
+      } else {
+        playWrong();
+        setShakeKey((k) => k + 1);
+        toast.error(t("game.wrong"), { duration: 900 });
+        setAnswer("");
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [answer, inputMode]);
@@ -248,8 +260,8 @@ export default function Game({ difficulty, mode, roomSeed, overrideInputMode, ov
       {settings.theme === "cyberpunk" && <CodeRain />}
 
       {/* Barre supérieure : manche / score / chrono */}
-      <header className="relative z-10 flex items-center justify-between px-5 pb-2 pt-6">
-        <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+      <header className="relative z-10 flex items-center justify-between px-5 pb-1.5 pt-3">
+        <div className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
           {t("game.round")} {engine.currentIndex + 1}/{ROUNDS_PER_GAME}
         </div>
         <div className="chrono-display text-2xl font-bold" style={{ color: chronoColor }}>
@@ -261,7 +273,7 @@ export default function Game({ difficulty, mode, roomSeed, overrideInputMode, ov
       </header>
 
       {/* Barre de temps */}
-      <div className="relative z-10 h-1.5 w-full bg-muted/40">
+      <div className="relative z-10 h-1 w-full bg-muted/40">
         <div
           className="time-bar h-full"
           style={{
@@ -272,8 +284,12 @@ export default function Game({ difficulty, mode, roomSeed, overrideInputMode, ov
         />
       </div>
 
-      {/* Scène de jeu */}
-      <main className="relative z-10 flex flex-1 flex-col items-center justify-center px-4">
+      {/* Scène de jeu — contenu centré verticalement dans l'espace restant ; chaos global pendant la surpression */}
+      <main
+        className={`relative z-10 flex flex-1 flex-col items-center justify-center px-4 pb-4 ${
+          engine.pressureActive ? "screen-panic" : ""
+        }`}
+      >
         {engine.roundState === "start" && (
           <div className="flex flex-col items-center gap-6 text-center">
             <p className="text-lg text-muted-foreground">{t("game.ready")}</p>
@@ -328,7 +344,7 @@ export default function Game({ difficulty, mode, roomSeed, overrideInputMode, ov
               <input
                 ref={inputRef}
                 value={answer}
-                onChange={(e) => setAnswer(e.target.value.toUpperCase())}
+                onChange={(e) => onChangeAnswer(e.target.value.toUpperCase())}
                 onKeyDown={onKeyDown}
                 placeholder={t("game.input.ph")}
                 inputMode="text"

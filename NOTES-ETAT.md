@@ -110,3 +110,30 @@ Checkpoint livraison précédent : c4edf8b7
 ## Points d'attention connus
 - Le test totalScore a une parenthèse de trop dans l'écriture actuelle (à vérifier: `totalScore([{ score: 100 }, { score: 200 }, { score: 0 })).toBe(300)` — INVALIDE TS, corriger avant run)
 - GameEnd "Rejouer" ne recharge pas les mots (navigate vers /end avec params mais engine.words=[]) → à corriger : charger la banque dans GameEnd ou rediriger vers /solo.
+
+## v4 en cours (retours client 2026-08-12)
+Demandes : (1) jeu affiché plus centré (trop haut), (2) chaos visuel sur TOUT l'écran en fin de manche (pas que la barre), (3) langues MG + DE.
+
+FAIT :
+- Game.tsx : header pt-3 pb-1.5 + texte 11px ; barre temps h-1 ; main justify-center pb-4 ; screen-panic appliqué au <main> quand engine.pressureActive
+- index.css : .screen-panic (animation screenPanic 180ms translate + saturate/contrast 1.25), ::before pulse rouge inset (panicRedPulse), .screen-panic .letter-bubble (violentShake + blur 0.4px + saturate 1.5), .screen-panic .chrono-display (wrongShake 220ms)
+- shared/game.ts : LangCode = fr|en|es|mg|de ; LANGUAGES + MG "Malagasy" 🇲🇬 + DE "Deutsch" 🇩🇪 ; DIFFICULTY_LABELS mg (Mora/Salantsalana/Sarotra) de (Leicht/Mittel/Schwer)
+- data/mg.json : 45 mots validés 4-7 lettres, sans doublon
+- data/de.json : 45 mots validés (ZUG et SCHATTEN retirés), sans doublon
+- voice.ts : mg-MG, de-DE dans mapLangToSpeechLocale
+
+RESTE :
+- GameContext.tsx : ajouter "mg" et "de" à TOUTES les clés UI (Record<LangCode,string>) — ~40 clés, 66 erreurs tsc
+- storage.ts : vérifier type de PlayerPrefs.lang (LangCode → OK si auto via shared/game.ts)
+- Home.tsx utilise LANGUAGES (auto OK) ; vérifier Solo.tsx (DIFFICULTY_LABELS auto OK)
+- pnpm test (ajouter tests 2 banques MG/DE : fetch + plage 4-7) + pnpm check + screenshots + checkpoint
+
+Checkpoint précédent : 0f3a95a3
+
+## v4 TERMINÉ (2026-08-12, livraison 0f3a95a3 → nouveau checkpoint à faire)
+- GameContext.tsx : TOUTES les clés UI ont mg + de (66 erreurs tsc → 0)
+- Screenshots vérifiés : accueil affiche 5 langues (🇫🇷🇬🇧🇪🇸🇲🇬🇩🇪) avec compteurs de difficulté ; /solo OK
+- Tests : 26/26 (dont banques MG/DE : fetch + plage 4-7 + sans doublon) ; tsc 0 erreur
+- curl localhost:3000/data/mg.json OK (servi par vite)
+- Home.tsx sélecteur langue itère LANGUAGES (vérifié) ; storage.ts lang: LangCode + updatePrefs persiste → MG/DE persistés auto
+- Reste : cocher dernier item todo.md + checkpoint + message livraison

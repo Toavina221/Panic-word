@@ -170,3 +170,32 @@ describe("intensité sonore", () => {
     }
   });
 });
+
+describe("banques de mots MG et DE", () => {
+  it("les mots malgaches et allemands sont dans la plage 4-7 lettres sans doublon", async () => {
+    for (const lang of ["mg", "de"] as const) {
+      const res = await fetch(`http://localhost:3000/data/${lang}.json`);
+      const data = (await res.json()) as { words: { word: string }[] };
+      const words = data.words.map((w) => w.word.toUpperCase());
+      for (const w of words) {
+        expect(w.length).toBeGreaterThanOrEqual(4);
+        expect(w.length).toBeLessThanOrEqual(7);
+      }
+      const unique = new Set(words);
+      expect(unique.size).toBe(words.length);
+      expect(words.length).toBeGreaterThanOrEqual(40);
+    }
+  });
+});
+
+describe("flux d'auto-validation (v5)", () => {
+  it("checkAnswer juge l'orthographe du mot cible (casse et accents indifférents)", () => {
+    expect(checkAnswer("RODE", "RODE")).toBe(true); // mot cible exact
+    expect(checkAnswer("rode", "RODE")).toBe(true); // casse indifférente
+    expect(checkAnswer("RODÉ", "RODE")).toBe(true); // accents normalisés
+    expect(checkAnswer("DOER", "RODE")).toBe(false); // anagramme ≠ mot cible
+    expect(checkAnswer("DORD", "RODE")).toBe(false); // même longueur, mauvais mot
+    expect(checkAnswer("AAAA", "RODE")).toBe(false);
+    expect(checkAnswer("ROD", "RODE")).toBe(false); // longueur différente → faux
+  });
+});

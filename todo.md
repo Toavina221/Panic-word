@@ -78,3 +78,18 @@
 - [x] Le son de pression (ambiance) s'arrête proprement en fin de manche (réponse correcte ou temps écoulé)
 - [x] Tester le scénario "mot non trouvé + erreur" : manche écoulée → onContinue au mot suivant sans plantage
 - [x] Vérification visuelle, tests, checkpoint et livraison
+
+## Améliorations v4
+- [x] Recentrer l'affichage en jeu (verticalement centré, pas collé en haut)
+- [x] Chaos visuel global en fin de manche (pas seulement la barre) : tremblement de l'écran, distorsion, clignotement rouge, bulles qui se déforment
+- [x] Banque de mots malgache (mg.json, 4-7 lettres) + détection MG
+- [x] Banque de mots allemande (de.json, 4-7 lettres)
+- [x] Traductions UI en malgache et allemand (GameContext UI)
+- [x] Sélecteurs langue MG/DE sur l'accueil + persistance préférences
+- [x] Reconnaissance vocale : mappage MG/DE vers les locales du navigateur
+- [x] Tests et vérifications, checkpoint et livraison
+
+## v5 — Auto-validation à longueur atteinte
+- [x] Auto-validation : dès que l'utilisateur tape le nombre de lettres du mot cible, la réponse est jugée automatiquement
+- [x] Après un échec : champ vide automatiquement pour retaper, chrono continue
+- [x] Tests, vérification visuelle, checkpoint et livraison

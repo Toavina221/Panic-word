@@ -172,8 +172,8 @@ export function listenVoice(
 }
 
 /**
- * Mappe un code de langue (fr/en/es) vers une locale SpeechRecognition
- * (fr-FR, en-US, es-ES).
+ * Mappe un code de langue (fr/en/es/mg/de) vers une locale SpeechRecognition
+ * (fr-FR, en-US, es-ES, mg-MG, de-DE).
  */
 export function mapLangToSpeechLocale(langCode: string): string {
   switch (langCode) {
@@ -181,6 +181,10 @@ export function mapLangToSpeechLocale(langCode: string): string {
       return "en-US";
     case "es":
       return "es-ES";
+    case "mg":
+      return "mg-MG";
+    case "de":
+      return "de-DE";
     case "fr":
     default:
       return "fr-FR";

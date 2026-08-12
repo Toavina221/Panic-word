@@ -255,6 +255,43 @@
 .letters-shaking .letter-bubble {
   animation: violentShake 140ms linear infinite;
 }
+/* Chaos global sur tout l'écran pendant la surpression (fin de manche) */
+@keyframes screenPanic {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-1px, 1px); }
+  20% { transform: translate(1.5px, -1px); }
+  30% { transform: translate(-1.5px, -0.5px); }
+  40% { transform: translate(1px, 1.5px); }
+  50% { transform: translate(-0.5px, -1.5px); }
+  60% { transform: translate(1.5px, 0.5px); }
+  70% { transform: translate(-1px, -1px); }
+  80% { transform: translate(0.5px, 1px); }
+  90% { transform: translate(-1.5px, 1px); }
+}
+@keyframes panicRedPulse {
+  0%, 100% { box-shadow: inset 0 0 0 0 transparent; }
+  50% { box-shadow: inset 0 0 40px 8px color-mix(in oklch, var(--danger) 38%, transparent); }
+}
+.screen-panic {
+  animation: screenPanic 180ms linear infinite;
+  filter: saturate(1.25) contrast(1.08);
+}
+.screen-panic::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  animation: panicRedPulse 350ms ease-in-out infinite;
+}
+/* Bulles qui se déforment pendant la panique */
+.screen-panic .letter-bubble {
+  animation: violentShake 140ms linear infinite;
+  filter: blur(0.4px) saturate(1.5);
+}
+.screen-panic .chrono-display {
+  animation: wrongShake 220ms ease-in-out infinite;
+}
 
 /* Flash ampoule qui grille (thème horreur) */
 @keyframes bulbFlash {

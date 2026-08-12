@@ -4,7 +4,7 @@
  * niveaux de difficulté, sélection de séries de mots.
  */
 
-export type LangCode = "fr" | "en" | "es";
+export type LangCode = "fr" | "en" | "es" | "mg" | "de";
 export type ThemeId = "normal" | "horror" | "cyberpunk";
 export type InputMode = "keyboard" | "voice";
 export type SoundIntensity = "soft" | "normal" | "terrifying";
@@ -28,6 +28,8 @@ export const LANGUAGES: { code: LangCode; label: string; flag: string }[] = [
   { code: "fr", label: "Français", flag: "🇫🇷" },
   { code: "en", label: "English", flag: "🇬🇧" },
   { code: "es", label: "Español", flag: "🇪🇸" },
+  { code: "mg", label: "Malagasy", flag: "🇲🇬" },
+  { code: "de", label: "Deutsch", flag: "🇩🇪" },
 ];
 
 export const THEMES: { id: ThemeId; label: Record<string, string> }[] = [
@@ -118,9 +120,9 @@ export function difficultyOf(word: string): Difficulty {
 }
 
 export const DIFFICULTY_LABELS: Record<Difficulty, Record<LangCode, string>> = {
-  easy: { fr: "Facile", en: "Easy", es: "Fácil" },
-  medium: { fr: "Moyen", en: "Medium", es: "Medio" },
-  hard: { fr: "Difficile", en: "Hard", es: "Difícil" },
+  easy: { fr: "Facile", en: "Easy", es: "Fácil", mg: "Mora", de: "Leicht" },
+  medium: { fr: "Moyen", en: "Medium", es: "Medio", mg: "Salantsalana", de: "Mittel" },
+  hard: { fr: "Difficile", en: "Hard", es: "Difícil", mg: "Sarotra", de: "Schwer" },
 };
 
 /**
