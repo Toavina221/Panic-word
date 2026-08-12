@@ -6,6 +6,8 @@ const PRECACHE_URLS = [
   "/data/fr.json",
   "/data/en.json",
   "/data/es.json",
+  "/data/mg.json",
+  "/data/de.json",
 ];
 
 self.addEventListener("install", (event) => {
