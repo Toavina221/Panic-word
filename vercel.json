@@ -3,7 +3,6 @@
   "buildCommand": "pnpm build",
   "outputDirectory": "dist/public",
   "installCommand": "pnpm install",
-  "framework": "vite",
   "headers": [
     {
       "source": "/service-worker.js",
