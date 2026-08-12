@@ -4,11 +4,6 @@
   "outputDirectory": "dist/public",
   "installCommand": "pnpm install",
   "framework": "vite",
-  "functions": {
-    "api/index.ts": {
-      "runtime": "nodejs22.x"
-    }
-  },
   "headers": [
     {
       "source": "/service-worker.js",
