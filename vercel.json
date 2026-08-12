@@ -4,24 +4,52 @@
   "outputDirectory": "dist/public",
   "installCommand": "pnpm install",
   "framework": "vite",
-  "routes": [
+  "functions": {
+    "api/index.ts": {
+      "runtime": "nodejs22.x"
+    }
+  },
+  "headers": [
     {
-      "src": "^/api/trpc/.*$",
-      "dest": "/api/trpc",
-      "headers": { "cache-control": "no-store" }
+      "source": "/service-worker.js",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache" },
+        { "key": "Service-Worker-Allowed", "value": "/" }
+      ]
     },
     {
-      "src": "^/service-worker\\.js$",
-      "headers": { "cache-control": "no-cache", "service-worker-allowed": "/" },
-      "dest": "/service-worker.js"
+      "source": "/assets/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
     },
     {
-      "src": "/manifest\\.json|/icons/.*|/data/.*|/assets/.*",
-      "headers": { "cache-control": "public, max-age=31536000, immutable" }
+      "source": "/icons/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
     },
     {
-      "src": "/.*",
-      "dest": "/index.html"
+      "source": "/data/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/screenshots/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/trpc/(.*)",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/((?!assets|icons|data|screenshots|manifest.json|service-worker.js|robots.txt|__manus__).*)",
+      "destination": "/index.html"
     }
   ]
 }
